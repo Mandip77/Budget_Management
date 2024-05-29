@@ -31,88 +31,71 @@ SuperBudget is a Spring Boot application designed to help users manage budget ca
 Follow these steps to set up the project locally:
 
 1. **Clone the repository**:
-   ```sh
-   git clone https://github.com/your-username/SuperBudget.git
-   cd SuperBudget
+   
+         git clone https://github.com/your-username/SuperBudget.git
+         cd SuperBudget
 
-    Set up the database:
+2. **Set up the database**
+   
+         mysql -u root -p < setup.sql
 
-    sh
+3. **Update application.properties**:
 
-mysql -u root -p < setup.sql
+   Update the src/main/resources/application.properties file with your MySQL credentials:
+   
+         spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp
+         spring.datasource.username=newuser
+         spring.datasource.password=your_password
+         spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+         spring.jpa.hibernate.ddl-auto=update
+         spring.jpa.show-sql=true
+         spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
 
-Update application.properties:
-Update the src/main/resources/application.properties file with your MySQL credentials:
+4. **Build the project**:
+      
+         mvn clean package
 
-properties
+5. **Run the application**:
 
-spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp
-spring.datasource.username=newuser
-spring.datasource.password=your_password
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+       java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
 
-Build the project:
-
-sh
-
-mvn clean package
-
-Run the application:
-
-sh
-
-    java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
-
-    Access the application:
+Access the application:
     Open your web browser and go to http://localhost:8080.
 
-Docker Setup
+## Docker Setup
 
 Follow these steps to set up the project using Docker:
 
-    Build and run the application using Docker Compose:
-
-    sh
+   1. Build and run the application using Docker Compose:
 
     mvn clean package
     docker-compose up --build
 
-    Access the application:
+   2. Access the application:
     Open your web browser and go to http://localhost:8080.
 
-Usage
+## Usage
 
 You can interact with the application through its RESTful API. Here are some example endpoints:
 
-    Get all budget categories:
+Get all budget categories:
 
-    bash
-
-GET /api/budget-categories
+      GET /api/budget-categories
 
 Create a new budget category:
-
-bash
-
-POST /api/budget-categories
-{
-"name": "Groceries",
-"allocation": 500.00,
-"balance": 500.00
-}
+      
+      POST /api/budget-categories
+      {
+      "name": "Groceries",
+      "allocation": 500.00,
+      "balance": 500.00
+      }
 
 Get all transactions:
 
-bash
-
-GET /api/transactions
+      GET /api/transactions
 
 Create a new transaction:
-
-bash
 
     POST /api/transactions
     {
