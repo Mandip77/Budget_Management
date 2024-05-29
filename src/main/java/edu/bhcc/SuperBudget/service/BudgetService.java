@@ -1,7 +1,12 @@
-package edu.bhcc.SuperBudget;
+package edu.bhcc.SuperBudget.service;
 
+import edu.bhcc.SuperBudget.model.Transaction;
+import edu.bhcc.SuperBudget.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import edu.bhcc.SuperBudget.model.BudgetCategory;
+import edu.bhcc.SuperBudget.repository.BudgetCategoryRepository;
+
 
 import java.util.List;
 

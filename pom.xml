@@ -48,7 +48,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>edu.bhcc.SuperBudget.Application</mainClass>
+					<mainClass>edu.bhcc.SuperBudget.BudgetAppApplication</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>

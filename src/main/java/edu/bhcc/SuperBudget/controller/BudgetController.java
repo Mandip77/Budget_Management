@@ -1,9 +1,12 @@
-package edu.bhcc.SuperBudget;
+package edu.bhcc.SuperBudget.controller;
 
+import edu.bhcc.SuperBudget.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import edu.bhcc.SuperBudget.model.BudgetCategory;
+import edu.bhcc.SuperBudget.service.BudgetService;
 
 @Controller
 public class BudgetController {

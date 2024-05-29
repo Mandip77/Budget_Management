@@ -1,4 +1,4 @@
-package edu.bhcc.SuperBudget;
+package edu.bhcc.SuperBudget.model;
 
 import jakarta.persistence.*;
 
