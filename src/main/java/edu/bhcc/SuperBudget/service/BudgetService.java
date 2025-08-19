@@ -1,11 +1,11 @@
 package edu.bhcc.SuperBudget.service;
 
+import edu.bhcc.SuperBudget.model.BudgetCategory;
 import edu.bhcc.SuperBudget.model.Transaction;
+import edu.bhcc.SuperBudget.repository.BudgetCategoryRepository;
 import edu.bhcc.SuperBudget.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import edu.bhcc.SuperBudget.model.BudgetCategory;
-import edu.bhcc.SuperBudget.repository.BudgetCategoryRepository;
 
 import java.util.List;
 
@@ -164,14 +164,21 @@ public class BudgetService {
                 + ", Category=" + (finalTargetCategory != null ? finalTargetCategory.getName() : "None"));
     }
 
-    public BudgetCategory updateBudgetCategory(BudgetCategory budgetCategory, Double previousAllocation) {
-        Double allocationChange = budgetCategory.getAllocation() - previousAllocation;
-        Double newRemainingAmount = budgetCategory.getRemainingAmount() + allocationChange;
-        Double newBalance = budgetCategory.getBalance() + allocationChange;
+    public BudgetCategory updateBudgetCategory(BudgetCategory updatedCategory, Double previousAllocation) {
+        // Load the existing category from the DB
+        BudgetCategory existing = budgetCategoryRepository.findById(updatedCategory.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        budgetCategory.setRemainingAmount(newRemainingAmount);
-        budgetCategory.setBalance(newBalance);
+        // Update editable fields
+        existing.setName(updatedCategory.getName());
+        existing.setAllocation(updatedCategory.getAllocation());
 
-        return budgetCategoryRepository.save(budgetCategory);
+        // Compute allocation change and adjust balances
+        double allocationChange = updatedCategory.getAllocation() - previousAllocation;
+        existing.setRemainingAmount(existing.getRemainingAmount() + allocationChange);
+        existing.setBalance(existing.getBalance() + allocationChange);
+
+        return budgetCategoryRepository.save(existing);
     }
+
 }
