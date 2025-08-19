@@ -25,3 +25,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # (Optional) If you prefer overriding Spring properties via env:
+    # environment:
+    #   - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/budgetapp?allowPublicKeyRetrieval=true&useSSL=false
+    #   - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+    #   - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}

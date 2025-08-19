@@ -1,14 +1,21 @@
-# Use the official OpenJDK image
-FROM openjdk:17-jdk-slim
+# ---------- Build stage ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /build
 
-# Set the working directory
+# Copy Maven files first to leverage Docker cache
+COPY pom.xml .
+# Download dependencies (optional optimization)
+RUN mvn -q -e -DskipTests dependency:go-offline
+
+# Now copy source and build
+COPY src ./src
+RUN mvn -q -e -DskipTests package
+
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:17-jre
 WORKDIR /app
+# Copy the fat jar built above (adjust name if different)
+COPY --from=builder /build/target/*-SNAPSHOT.jar app.jar
 
-# Copy the Spring Boot application jar into the container
-COPY target/SuperBudget-0.0.1-SNAPSHOT.jar SuperBudget.jar
-
-# Expose the port the application runs on
 EXPOSE 8080
-
-# Run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "SuperBudget.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
