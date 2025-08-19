@@ -164,20 +164,32 @@ public class BudgetService {
                 + ", Category=" + (finalTargetCategory != null ? finalTargetCategory.getName() : "None"));
     }
 
+    /**
+     * Update an existing budget category by loading it from the database,
+     * updating its name and allocation, and adjusting its remaining amount
+     * and balance based on the change in allocation.
+     *
+     * @param updatedCategory    the category submitted from the form (contains id, name and allocation)
+     * @param previousAllocation the allocation value prior to the edit
+     * @return the saved BudgetCategory entity with updated values
+     */
     public BudgetCategory updateBudgetCategory(BudgetCategory updatedCategory, Double previousAllocation) {
-        // Load the existing category from the DB
+        // Fetch the existing category from the repository
         BudgetCategory existing = budgetCategoryRepository.findById(updatedCategory.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + updatedCategory.getId()));
 
         // Update editable fields
         existing.setName(updatedCategory.getName());
         existing.setAllocation(updatedCategory.getAllocation());
 
-        // Compute allocation change and adjust balances
+        // Calculate the difference between the new and previous allocations
         double allocationChange = updatedCategory.getAllocation() - previousAllocation;
+
+        // Adjust remaining amount and balance based on the allocation change
         existing.setRemainingAmount(existing.getRemainingAmount() + allocationChange);
         existing.setBalance(existing.getBalance() + allocationChange);
 
+        // Persist and return the updated entity
         return budgetCategoryRepository.save(existing);
     }
 
