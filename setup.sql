@@ -2,7 +2,7 @@ create DATABASE IF NOT EXISTS budgetapp;
 
 -- Create a user that can connect from other containers (not just localhost)
 create USER IF NOT EXISTS 'newuser'@'%' IDENTIFIED BY 'newpassword';
-GRANT ALL PRIVILEGES ON budgetapp.* TO 'newuser'@'%';
+GRANT ALL PRIVILEGES ON budgetapp.* TO 'newuser'@'localhost';
 FLUSH PRIVILEGES;
 
 use budgetapp;
