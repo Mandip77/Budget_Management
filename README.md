@@ -1,120 +1,253 @@
-# SuperBudget
+# SuperBudget - Personal Budget Management System
 
-SuperBudget is a Spring Boot application designed to help users manage budget categories and transactions. This project is built with Java, Spring Boot, JPA, MySQL, and Docker.
+SuperBudget is a comprehensive Spring Boot web application designed to help users manage their personal finances through budget categories and transaction tracking. Built with modern web technologies and containerized for easy deployment.
 
-## Table of Contents
+## 📋 Table of Contents
 - [Features](#features)
+- [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
-- [Setup](#setup)
-   - [Local Setup](#local-setup)
-   - [Docker Setup](#docker-setup)
-- [Usage](#usage)
+- [Quick Start](#quick-start)
+- [Setup Methods](#setup-methods)
+    - [Docker Setup (Recommended)](#docker-setup-recommended)
+    - [Local Development Setup](#local-development-setup)
+- [Application Features](#application-features)
+- [API Endpoints](#api-endpoints)
+- [Database Schema](#database-schema)
+- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#contact)
 
-## Features
-- Manage budget categories
-- Track transactions
-- RESTful API for interacting with budget data
-- Dockerized for easy setup and deployment
+## ✨ Features
 
-## Prerequisites
-- Java JDK 11 or higher
-- Maven
-- Docker
-- MySQL
+### Budget Management
+- **Create Budget Categories**: Set up categories like Groceries, Entertainment, Transportation
+- **Allocation Management**: Define monthly budget allocations for each category
+- **Real-time Balance Tracking**: Monitor remaining balance and spending activity
+- **Edit Categories**: Modify category names and allocations with automatic balance adjustments
 
-## Setup
+### Transaction Management
+- **Add Transactions**: Record expenses against specific budget categories
+- **Edit Transactions**: Modify transaction amounts, descriptions, and categories
+- **Delete Transactions**: Remove transactions with automatic balance restoration
+- **Budget Validation**: Prevents overspending beyond allocated category limits
 
-### Local Setup
-Follow these steps to set up the project locally:
+### Dashboard & Reporting
+- **Interactive Dashboard**: View all budget categories and recent transactions
+- **Real-time Updates**: Automatic balance calculations and activity tracking
+- **Visual Indicators**: Color-coded alerts for overspending and low balances
+- **Responsive Design**: Mobile-friendly interface with Bootstrap styling
+
+## 🛠 Technology Stack
+
+- **Backend**: Spring Boot 3.x, Spring Data JPA, Spring MVC
+- **Frontend**: Thymeleaf, Bootstrap 4.5, jQuery
+- **Database**: MySQL 8.0
+- **Build Tool**: Maven
+- **Containerization**: Docker & Docker Compose
+- **Java Version**: OpenJDK 17
+
+## 📋 Prerequisites
+
+### For Docker Setup (Recommended)
+- Docker Desktop or Docker Engine
+- Docker Compose
+
+### For Local Development
+- Java JDK 17 or higher
+- Maven 3.6+
+- MySQL 8.0+
+- Git
+
+## 🚀 Quick Start
+
+### Docker Setup (Recommended)
 
 1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/SuperBudget.git
+   cd SuperBudget
+   ```
+
+2. **Build and run with Docker Compose**:
+   ```bash
+   # Build the Spring Boot application
+   mvn clean package -DskipTests
    
-         git clone https://github.com/your-username/SuperBudget.git
-         cd SuperBudget
+   # Start all services
+   docker-compose up --build
+   ```
 
-2. **Set up the database**
-   
-         mysql -u root -p < setup.sql
+3. **Access the application**:
+    - Open your browser and navigate to: http://localhost:8080
+    - The database will be automatically initialized with sample data
 
-3. **Update application.properties**:
+4. **Stop the application**:
+   ```bash
+   docker-compose down
+   ```
 
-   Update the src/main/resources/application.properties file with your MySQL credentials:
-   
-         spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp
-         spring.datasource.username=newuser
-         spring.datasource.password=your_password
-         spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-         spring.jpa.hibernate.ddl-auto=update
-         spring.jpa.show-sql=true
-         spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+### Local Development Setup
 
-4. **Build the project**:
-      
-         mvn clean package
+1. **Clone and navigate to the repository**:
+   ```bash
+   git clone https://github.com/your-username/SuperBudget.git
+   cd SuperBudget
+   ```
 
-5. **Run the application**:
+2. **Set up MySQL database**:
+   ```bash
+   mysql -u root -p < setup.sql
+   ```
 
-       java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
+3. **Configure database connection**:
+   Update `src/main/resources/application.properties`:
+   ```properties
+   spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp?allowPublicKeyRetrieval=true&useSSL=false
+   spring.datasource.username=newuser
+   spring.datasource.password=newpassword
+   ```
 
-Access the application:
-    Open your web browser and go to http://localhost:8080.
+4. **Build and run**:
+   ```bash
+   mvn clean package
+   java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
+   ```
 
-## Docker Setup
+5. **Access the application**:
+   Open http://localhost:8080 in your browser
 
-Follow these steps to set up the project using Docker:
+## 📱 Application Features
 
-   1. Build and run the application using Docker Compose:
+### Main Dashboard
+- **Budget Categories Table**: Shows category name, allocation, current balance, and activity
+- **Recent Transactions Table**: Displays transaction descriptions, amounts, and associated categories
+- **Add Transaction Form**: Quick transaction entry with category selection
+- **Add Category Form**: Create new budget categories with initial allocations
 
-    mvn clean package
-    docker-compose up --build
+### Budget Category Management
+- **Create**: Add new budget categories with custom allocations
+- **Edit**: Modify category details with automatic balance recalculation
+- **Delete**: Remove categories (cascades to associated transactions)
+- **Balance Tracking**: Real-time balance updates based on transactions
 
-   2. Access the application:
-    Open your web browser and go to http://localhost:8080.
+### Transaction Management
+- **Add**: Create transactions against specific budget categories
+- **Edit**: Modify transaction details including changing categories
+- **Delete**: Remove transactions with automatic budget restoration
+- **Validation**: Prevents transactions that exceed category budgets
 
-## Usage
+### Smart Features
+- **Overspending Protection**: Blocks transactions that would exceed category limits
+- **Automatic Calculations**: Real-time balance and activity updates
+- **Data Integrity**: Cascade deletes and referential integrity
+- **User-Friendly Errors**: Clear error messages for invalid operations
 
-You can interact with the application through its RESTful API. Here are some example endpoints:
+## 🔌 Web Interface Endpoints
 
-Get all budget categories:
+| Endpoint | Method | Description |
+|----------|---------|-------------|
+| `/` | GET | Main dashboard with categories and transactions |
+| `/add-transaction` | POST | Create a new transaction |
+| `/edit-transaction/{id}` | GET | Edit transaction form |
+| `/edit-transaction` | POST | Update transaction |
+| `/delete-transaction/{id}` | GET | Delete a transaction |
+| `/add-category` | POST | Create a new budget category |
+| `/edit-category/{id}` | GET | Edit category form |
+| `/edit-category` | POST | Update category |
+| `/delete-category/{id}` | GET | Delete a category |
 
-      GET /api/budget-categories
+## 🗄 Database Schema
 
-Create a new budget category:
-      
-      POST /api/budget-categories
-      {
-      "name": "Groceries",
-      "allocation": 500.00,
-      "balance": 500.00
-      }
+### Budget Categories Table
+```sql
+budget_category (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    allocation DECIMAL(10,2) NOT NULL,
+    balance DECIMAL(10,2) NOT NULL,
+    activity DECIMAL(10,2) DEFAULT 0.0,
+    remaining_amount DECIMAL(10,2) DEFAULT 0.0
+)
+```
 
-Get all transactions:
+### Transactions Table
+```sql
+transaction (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    description VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    budget_category_id BIGINT NOT NULL,
+    FOREIGN KEY (budget_category_id) REFERENCES budget_category(id)
+)
+```
 
-      GET /api/transactions
+## 🔧 Configuration Files
 
-Create a new transaction:
+### Docker Configuration
+- `docker-compose.yml`: Multi-container setup with MySQL and Spring Boot
+- `Dockerfile`: Spring Boot application containerization
+- `setup.sql`: Database initialization script
 
-    POST /api/transactions
-    {
-        "description": "Milk",
-        "amount": 5.00,
-        "budgetCategoryId": 1
-    }
+### Application Configuration
+- `application.properties`: Default local configuration
+- `application-docker.properties`: Docker-specific database connection
+- `pom.xml`: Maven dependencies and build configuration
 
-Contributing
+## 🚨 Troubleshooting
 
-First off, thanks for taking the time to contribute! 🎉
+### Docker Issues
+- **Connection refused**: Ensure Docker Desktop is running
+- **Port conflicts**: Check if port 8080 or 3306 are already in use
+- **Build failures**: Run `mvn clean package` before `docker-compose up`
 
-Please read our Contributing Guidelines for details on our code of conduct, and the process for submitting pull requests to us.
-License
+### Database Connection Issues
+- **Access denied**: Verify MySQL credentials in configuration files
+- **Connection timeout**: Ensure MySQL service is running and accessible
+- **Schema errors**: Run the setup.sql script to initialize the database
+
+### Application Errors
+- **Transaction validation errors**: Check category balance before adding transactions
+- **Missing categories**: Ensure at least one budget category exists before adding transactions
+
+### Common Solutions
+```bash
+# Reset Docker environment
+docker-compose down -v
+docker-compose up --build
+
+# Check container logs
+docker-compose logs app
+docker-compose logs db
+
+# Rebuild application
+mvn clean package -DskipTests
+```
+
+## 🧪 Sample Data
+
+The application includes sample budget categories:
+- **Groceries**: $500.00 allocation
+- **Entertainment**: $200.00 allocation
+- **Transportation**: $300.00 allocation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a new Pull Request
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-Contact
 
-If you have any questions or feedback, feel free to reach out to us:
+## 📞 Contact
 
-    Email: mandip.amgain123@gmail.com
-    GitHub: Mandip77
+- **Email**: mandip.amgain123@gmail.com
+- **GitHub**: [Mandip77](https://github.com/Mandip77)
+- **Project Repository**: [SuperBudget](https://github.com/Mandip77/SuperBudget)
+
+---
+
+**Note**: This application is designed for personal budget management and educational purposes. For production use, consider additional security measures and data backup strategies.
