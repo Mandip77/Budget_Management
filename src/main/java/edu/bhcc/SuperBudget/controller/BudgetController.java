@@ -51,9 +51,45 @@ public class BudgetController {
         return "redirect:/";
     }
 
+    // NEW: Get edit transaction form
+    @GetMapping("/edit-transaction/{id}")
+    public String editTransactionForm(@PathVariable("id") Long id, Model model) {
+        Transaction transaction = budgetService.findTransactionById(id);
+        if (transaction == null) {
+            model.addAttribute("errorMessage", "Transaction not found.");
+            return "redirect:/";
+        }
+
+        model.addAttribute("transaction", transaction);
+        model.addAttribute("budgetCategories", budgetService.findAllBudgetCategories());
+        return "edit-transaction";
+    }
+
+    // UPDATED: Edit transaction method with proper validation and category support
     @PostMapping("/edit-transaction")
-    public String editTransaction(@ModelAttribute Transaction transaction) {
-        budgetService.updateTransaction(transaction.getId(), transaction.getAmount());
+    public String editTransaction(
+            @ModelAttribute Transaction transaction,
+            @RequestParam(value = "categoryId", required = false) Long budgetCategoryId,
+            Model model
+    ) {
+        try {
+            BudgetCategory budgetCategory = null;
+            if (budgetCategoryId != null) {
+                budgetCategory = budgetService.findBudgetCategoryById(budgetCategoryId);
+                if (budgetCategory == null) {
+                    model.addAttribute("errorMessage", "Invalid budget category selected.");
+                    return "redirect:/edit-transaction/" + transaction.getId();
+                }
+            }
+
+            budgetService.updateTransaction(transaction.getId(), transaction.getAmount(),
+                    transaction.getDescription(), budgetCategory);
+            System.out.println("Updated transaction: " + transaction);  // Debug logging
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error updating transaction: " + e.getMessage());  // Debug logging
+            model.addAttribute("errorMessage", "Transaction could not be updated: " + e.getMessage());
+            return "redirect:/edit-transaction/" + transaction.getId();
+        }
         return "redirect:/";
     }
 

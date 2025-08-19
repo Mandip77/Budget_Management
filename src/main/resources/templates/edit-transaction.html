@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaction - Super Budget</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container py-5" style="background-color: #f7f9fc;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Edit Transaction</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                        <span th:text="${errorMessage}"></span>
+                    </div>
+                    <form th:action="@{/edit-transaction}" method="post" th:object="${transaction}">
+                        <input type="hidden" th:field="*{id}" />
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="description" th:field="*{description}"
+                                   placeholder="Enter transaction description" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="amount" class="form-label">Amount ($)</label>
+                            <input type="number" class="form-control" id="amount" th:field="*{amount}"
+                                   step="0.01" min="0.01" placeholder="0.00" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="categoryId" class="form-label">Budget Category</label>
+                            <select class="form-select" id="categoryId" name="categoryId" required>
+                                <option value="">Select a category</option>
+                                <option th:each="category : ${budgetCategories}"
+                                        th:value="${category.id}"
+                                        th:text="${category.name + ' (Available: $' + #numbers.formatDecimal(category.balance, 0, 2) + ')'}"
+                                        th:selected="${category.id == transaction.budgetCategory.id}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Update Transaction</button>
+                            <a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

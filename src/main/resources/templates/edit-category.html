@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Category - Super Budget</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container py-5" style="background-color: #f7f9fc;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Edit Category</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                        <span th:text="${errorMessage}"></span>
+                    </div>
+                    <form th:action="@{/edit-category}" method="post" th:object="${budgetCategory}">
+                        <input type="hidden" th:field="*{id}" />
+                        <input type="hidden" name="previousAllocation" th:value="${budgetCategory.allocation}" />
+
+                        <div class="mb-4">
+                            <label for="name" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}"
+                                   placeholder="Enter category name" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="allocation" class="form-label">Allocation ($)</label>
+                            <input type="number" class="form-control" id="allocation" th:field="*{allocation}"
+                                   step="0.01" min="0.01" placeholder="0.00" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Update Category</button>
+                            <a th:href="@{/}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
