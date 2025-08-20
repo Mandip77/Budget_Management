@@ -90,16 +90,8 @@ public class BudgetCategory {
             throw new IllegalArgumentException("Transaction amount exceeds the remaining budget.");
         }
 
-        // Deduct the transaction amount from both the balance and the
-        // remaining amount to keep the category's totals in sync.
-        // Previously only the balance was updated which caused
-        // remainingAmount to become stale and eventually incorrect
-        // when transactions were added and removed.
         this.balance -= transactionAmount;
-
-        if (this.remainingAmount != null) {
-            this.remainingAmount -= transactionAmount;
-        }
+        this.remainingAmount -= transactionAmount;
         this.activity = transactionAmount;
     }
 }
