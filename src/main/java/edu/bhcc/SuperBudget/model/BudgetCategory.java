@@ -91,6 +91,9 @@ public class BudgetCategory {
         }
 
         this.balance -= transactionAmount;
+        if (this.remainingAmount != null) {
+            this.remainingAmount -= transactionAmount;
+        }
         this.activity = transactionAmount;
     }
 }
