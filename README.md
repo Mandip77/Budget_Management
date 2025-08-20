@@ -7,8 +7,6 @@ SuperBudget is a comprehensive Spring Boot web application designed to help user
 - [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Setup Methods](#setup-methods)
-    - [Docker Setup (Recommended)](#docker-setup-recommended)
     - [Local Development Setup](#local-development-setup)
 - [Application Features](#application-features)
 - [API Endpoints](#api-endpoints)
@@ -43,14 +41,10 @@ SuperBudget is a comprehensive Spring Boot web application designed to help user
 - **Frontend**: Thymeleaf, Bootstrap 4.5, jQuery
 - **Database**: MySQL 8.0
 - **Build Tool**: Maven
-- **Containerization**: Docker & Docker Compose
+- **Containerization**: Docker (configuration files not yet included)
 - **Java Version**: OpenJDK 17
 
 ## 📋 Prerequisites
-
-### For Docker Setup (Recommended)
-- Docker Desktop or Docker Engine
-- Docker Compose
 
 ### For Local Development
 - Java JDK 17 or higher
@@ -60,31 +54,7 @@ SuperBudget is a comprehensive Spring Boot web application designed to help user
 
 ## 🚀 Quick Start
 
-### Docker Setup (Recommended)
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/SuperBudget.git
-   cd SuperBudget
-   ```
-
-2. **Build and run with Docker Compose**:
-   ```bash
-   # Build the Spring Boot application
-   mvn clean package -DskipTests
-   
-   # Start all services
-   docker-compose up --build
-   ```
-
-3. **Access the application**:
-    - Open your browser and navigate to: http://localhost:8080
-    - The database will be automatically initialized with sample data
-
-4. **Stop the application**:
-   ```bash
-   docker-compose down
-   ```
+> Docker support is planned, but Docker configuration files (Dockerfile, docker-compose.yml) are not yet included.
 
 ### Local Development Setup
 
@@ -183,22 +153,12 @@ transaction (
 
 ## 🔧 Configuration Files
 
-### Docker Configuration
-- `docker-compose.yml`: Multi-container setup with MySQL and Spring Boot
-- `Dockerfile`: Spring Boot application containerization
-- `setup.sql`: Database initialization script
-
 ### Application Configuration
 - `application.properties`: Default local configuration
-- `application-docker.properties`: Docker-specific database connection
 - `pom.xml`: Maven dependencies and build configuration
+- `setup.sql`: Database initialization script
 
 ## 🚨 Troubleshooting
-
-### Docker Issues
-- **Connection refused**: Ensure Docker Desktop is running
-- **Port conflicts**: Check if port 8080 or 3306 are already in use
-- **Build failures**: Run `mvn clean package` before `docker-compose up`
 
 ### Database Connection Issues
 - **Access denied**: Verify MySQL credentials in configuration files
@@ -211,14 +171,6 @@ transaction (
 
 ### Common Solutions
 ```bash
-# Reset Docker environment
-docker-compose down -v
-docker-compose up --build
-
-# Check container logs
-docker-compose logs app
-docker-compose logs db
-
 # Rebuild application
 mvn clean package -DskipTests
 ```
