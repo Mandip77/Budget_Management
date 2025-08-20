@@ -96,7 +96,10 @@ public class BudgetCategory {
         // remainingAmount to become stale and eventually incorrect
         // when transactions were added and removed.
         this.balance -= transactionAmount;
-        this.remainingAmount -= transactionAmount;
+
+        if (this.remainingAmount != null) {
+            this.remainingAmount -= transactionAmount;
+        }
         this.activity = transactionAmount;
     }
 }
