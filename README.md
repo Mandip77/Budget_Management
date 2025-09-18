@@ -1,205 +1,249 @@
-# SuperBudget - Personal Budget Management System
+<p align="center">
+  <img src="https://fonts.gstatic.com/s/e/notoemoji/15.0/1f4b8/72.png" alt="money emoji" width="60"/>
+</p>
 
-SuperBudget is a comprehensive Spring Boot web application designed to help users manage their personal finances through budget categories and transaction tracking. Built with modern web technologies and containerized for easy deployment.
+<h1 align="center">
+  💸✨ SuperBudget ✨💸<br>
+  <sub>Personal Budget Management System</sub>
+</h1>
 
-## 📋 Table of Contents
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-    - [Local Development Setup](#local-development-setup)
-- [Application Features](#application-features)
-- [API Endpoints](#api-endpoints)
-- [Database Schema](#database-schema)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-
-## ✨ Features
-
-### Budget Management
-- **Create Budget Categories**: Set up categories like Groceries, Entertainment, Transportation
-- **Allocation Management**: Define monthly budget allocations for each category
-- **Real-time Balance Tracking**: Monitor remaining balance and spending activity
-- **Edit Categories**: Modify category names and allocations with automatic balance adjustments
-
-### Transaction Management
-- **Add Transactions**: Record expenses against specific budget categories
-- **Edit Transactions**: Modify transaction amounts, descriptions, and categories
-- **Delete Transactions**: Remove transactions with automatic balance restoration
-- **Budget Validation**: Prevents overspending beyond allocated category limits
-
-### Dashboard & Reporting
-- **Interactive Dashboard**: View all budget categories and recent transactions
-- **Real-time Updates**: Automatic balance calculations and activity tracking
-- **Visual Indicators**: Color-coded alerts for overspending and low balances
-- **Responsive Design**: Mobile-friendly interface with Bootstrap styling
-
-## 🛠 Technology Stack
-
-- **Backend**: Spring Boot 3.x, Spring Data JPA, Spring MVC
-- **Frontend**: Thymeleaf, Bootstrap 4.5, jQuery
-- **Database**: MySQL 8.0
-- **Build Tool**: Maven
-- **Containerization**: Docker (configuration files not yet included)
-- **Java Version**: OpenJDK 17
-
-## 📋 Prerequisites
-
-### For Local Development
-- Java JDK 17 or higher
-- Maven 3.6+
-- MySQL 8.0+
-- Git
-
-## 🚀 Quick Start
-
-> Docker support is planned, but Docker configuration files (Dockerfile, docker-compose.yml) are not yet included.
-
-### Local Development Setup
-
-1. **Clone and navigate to the repository**:
-   ```bash
-   git clone https://github.com/your-username/SuperBudget.git
-   cd SuperBudget
-   ```
-
-2. **Set up MySQL database**:
-   ```bash
-   mysql -u root -p < setup.sql
-   ```
-
-3. **Configure database connection**:
-   Update `src/main/resources/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp?allowPublicKeyRetrieval=true&useSSL=false
-   spring.datasource.username=newuser
-   spring.datasource.password=newpassword
-   ```
-
-4. **Build and run**:
-   ```bash
-   mvn clean package
-   java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
-   ```
-
-5. **Access the application**:
-   Open http://localhost:8080 in your browser
-
-## 📱 Application Features
-
-### Main Dashboard
-- **Budget Categories Table**: Shows category name, allocation, current balance, and activity
-- **Recent Transactions Table**: Displays transaction descriptions, amounts, and associated categories
-- **Add Transaction Form**: Quick transaction entry with category selection
-- **Add Category Form**: Create new budget categories with initial allocations
-
-### Budget Category Management
-- **Create**: Add new budget categories with custom allocations
-- **Edit**: Modify category details with automatic balance recalculation
-- **Delete**: Remove categories (cascades to associated transactions)
-- **Balance Tracking**: Real-time balance updates based on transactions
-
-### Transaction Management
-- **Add**: Create transactions against specific budget categories
-- **Edit**: Modify transaction details including changing categories
-- **Delete**: Remove transactions with automatic budget restoration
-- **Validation**: Prevents transactions that exceed category budgets
-
-### Smart Features
-- **Overspending Protection**: Blocks transactions that would exceed category limits
-- **Automatic Calculations**: Real-time balance and activity updates
-- **Data Integrity**: Cascade deletes and referential integrity
-- **User-Friendly Errors**: Clear error messages for invalid operations
-
-## 🔌 Web Interface Endpoints
-
-| Endpoint | Method | Description |
-|----------|---------|-------------|
-| `/` | GET | Main dashboard with categories and transactions |
-| `/add-transaction` | POST | Create a new transaction |
-| `/edit-transaction/{id}` | GET | Edit transaction form |
-| `/edit-transaction` | POST | Update transaction |
-| `/delete-transaction/{id}` | GET | Delete a transaction |
-| `/add-category` | POST | Create a new budget category |
-| `/edit-category/{id}` | GET | Edit category form |
-| `/edit-category` | POST | Update category |
-| `/delete-category/{id}` | GET | Delete a category |
-
-## 🗄 Database Schema
-
-### Budget Categories Table
-```sql
-budget_category (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    allocation DECIMAL(10,2) NOT NULL,
-    balance DECIMAL(10,2) NOT NULL,
-    activity DECIMAL(10,2) DEFAULT 0.0,
-    remaining_amount DECIMAL(10,2) DEFAULT 0.0
-)
-```
-
-### Transactions Table
-```sql
-transaction (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    description VARCHAR(255) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    budget_category_id BIGINT NOT NULL,
-    FOREIGN KEY (budget_category_id) REFERENCES budget_category(id)
-)
-```
-
-## 🔧 Configuration Files
-
-### Application Configuration
-- `application.properties`: Default local configuration
-- `pom.xml`: Maven dependencies and build configuration
-- `setup.sql`: Database initialization script
-
-## 🚨 Troubleshooting
-
-### Database Connection Issues
-- **Access denied**: Verify MySQL credentials in configuration files
-- **Connection timeout**: Ensure MySQL service is running and accessible
-- **Schema errors**: Run the setup.sql script to initialize the database
-
-### Application Errors
-- **Transaction validation errors**: Check category balance before adding transactions
-- **Missing categories**: Ensure at least one budget category exists before adding transactions
-
-### Common Solutions
-```bash
-# Rebuild application
-mvn clean package -DskipTests
-```
-
-## 🧪 Sample Data
-
-The application includes sample budget categories:
-- **Groceries**: $500.00 allocation
-- **Entertainment**: $200.00 allocation
-- **Transportation**: $300.00 allocation
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Create a new Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📞 Contact
-
-- **Email**: mandip.amgain123@gmail.com
-- **GitHub**: [Mandip77](https://github.com/Mandip77)
-- **Project Repository**: [SuperBudget](https://github.com/Mandip77/SuperBudget)
+<p align="center">
+  <b>Take charge of your finances—with a smile!</b><br>
+  <i>Track expenses, manage categories, and reach your goals with ease.</i>
+</p>
 
 ---
 
-**Note**: This application is designed for personal budget management and educational purposes. For production use, consider additional security measures and data backup strategies.
+<div align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=800&color=34B7F1&center=true&width=435&lines=Welcome+to+SuperBudget!;Budgeting+made+fun+%26+easy!;Let's+start+saving+%F0%9F%98%8E" alt="Typing SVG" />
+</div>
+
+---
+
+## 📚 Table of Contents
+
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#-tech-stack)
+- [⚡ Quick Start](#-quick-start)
+    - [🔧 Local Setup](#-local-setup)
+- [💡 App Features (Overview)](#-app-features-overview)
+- [🌐 Web Endpoints](#-web-endpoints)
+- [🗄️ Database Schema](#-database-schema)
+- [🪛 Troubleshooting](#-troubleshooting)
+- [🧪 Sample Data](#-sample-data)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [📬 Contact](#-contact)
+
+---
+
+## ✨ Features
+
+<div align="center">
+  <img src="https://media.giphy.com/media/3o7aD7l9MhpQwM6NYY/giphy.gif" width="200" />
+</div>
+
+### 💵 Budget Management
+- **Create & Edit Categories:** Groceries, Entertainment, Transportation, and more!
+- **Set Monthly Allocations:** Define your spending limits.
+- **Real-Time Balance:** Instantly see your remaining balance.
+- **Automatic Adjustments:** Edit category names and allocations—balances update automatically!
+
+### 🧾 Transaction Magic
+- **Add, Edit, Delete Transactions:** Quick and simple.
+- **Budget Validation:** Prevents overspending (we got your back!).
+- **Automatic Balance Restoration:** Delete a transaction? Your budget is instantly corrected.
+
+### 📊 Dashboard & Reporting
+- **All-in-One Dashboard:** View categories and transactions at a glance.
+- **Live Updates:** Balances and activities update in real time.
+- **Visual Alerts:** Color-coded highlights for overspending and low balances.
+- **Fully Responsive:** Looks great on any device! 📱💻
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer      | Technology                                      |
+|------------|-------------------------------------------------|
+| Backend    | Spring Boot 3.x, Spring Data JPA, Spring MVC    |
+| Frontend   | Thymeleaf, Bootstrap 4.5, jQuery                |
+| Database   | MySQL 8.0                                       |
+| Build Tool | Maven                                           |
+| Java       | OpenJDK 17                                      |
+| 🐳 Docker  | *Support coming soon!*                          |
+
+---
+
+## ⚡ Quick Start
+
+> **🎉 Docker support is coming soon! For now, let's get started locally:**
+
+### 🔧 Local Setup
+
+1. **Clone the Repo**
+    ```bash
+    git clone https://github.com/Mandip77/SuperBudget.git
+    cd SuperBudget
+    ```
+
+2. **Set Up MySQL Database**
+    ```bash
+    mysql -u root -p < setup.sql
+    ```
+
+3. **Configure Database Connection**
+    Open `src/main/resources/application.properties` and update:
+    ```properties
+    spring.datasource.url=jdbc:mysql://localhost:3306/budgetapp?allowPublicKeyRetrieval=true&useSSL=false
+    spring.datasource.username=newuser
+    spring.datasource.password=newpassword
+    ```
+
+4. **Build & Run**
+    ```bash
+    mvn clean package
+    java -jar target/SuperBudget-0.0.1-SNAPSHOT.jar
+    ```
+
+5. **Open in Browser**
+    Visit [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 💡 App Features (Overview)
+
+<div align="center">
+  <img src="https://media.giphy.com/media/xUOxfjsW6TqPF1nZ8k/giphy.gif" width="200"/>
+</div>
+
+### 🏠 Dashboard
+- **Budget Categories Table:** Names, allocations, balances, and activity
+- **Recent Transactions Table:** Descriptions, amounts, categories
+- **Quick Add Forms:** Easily add transactions and categories
+
+### 📁 Budget Category Management
+- **Create, Edit, Delete:** Add new, modify, or remove categories
+- **Balance Tracking:** Always up-to-date with your spending
+
+### 📝 Transaction Management
+- **Add, Edit, Delete:** Full CRUD for your expenses
+- **Validation:** No more overspending mistakes
+
+### 🧙‍♂️ Smart Features
+- **Overspending Protection:** Can’t go over your budget!
+- **Automatic Calculations:** Everything updates in real time.
+- **Data Integrity:** Safe and reliable, with smart deletes.
+- **Friendly Errors:** Clear messages guide you.
+
+---
+
+## 🌐 Web Endpoints
+
+| Endpoint                   | Method | Description                               |
+|----------------------------|--------|-------------------------------------------|
+| `/`                        | GET    | Main dashboard                            |
+| `/add-transaction`         | POST   | Add a new transaction                     |
+| `/edit-transaction/{id}`   | GET    | Show transaction edit form                |
+| `/edit-transaction`        | POST   | Update transaction                        |
+| `/delete-transaction/{id}` | GET    | Delete a transaction                      |
+| `/add-category`            | POST   | Add a new budget category                 |
+| `/edit-category/{id}`      | GET    | Show category edit form                   |
+| `/edit-category`           | POST   | Update category                           |
+| `/delete-category/{id}`    | GET    | Delete a category                         |
+
+---
+
+## 🗄️ Database Schema
+
+<details>
+  <summary><b>Click to view SQL schema!</b></summary>
+
+### `budget_category`
+```sql
+id BIGINT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(255) NOT NULL,
+allocation DECIMAL(10,2) NOT NULL,
+balance DECIMAL(10,2) NOT NULL,
+activity DECIMAL(10,2) DEFAULT 0.0,
+remaining_amount DECIMAL(10,2) DEFAULT 0.0
+```
+
+### `transaction`
+```sql
+id BIGINT PRIMARY KEY AUTO_INCREMENT,
+description VARCHAR(255) NOT NULL,
+amount DECIMAL(10,2) NOT NULL,
+budget_category_id BIGINT NOT NULL,
+FOREIGN KEY (budget_category_id) REFERENCES budget_category(id)
+```
+</details>
+
+---
+
+## 🪛 Troubleshooting
+
+<div align="center">
+  <img src="https://media.giphy.com/media/3ohs7KViFvUlXhG5lC/giphy.gif" width="120"/>
+</div>
+
+### 🐬 Database Issues
+- **Access denied?** Double-check your MySQL credentials.
+- **Timeouts?** Make sure MySQL is running and accessible.
+- **Schema errors?** Run `setup.sql` to initialize the database.
+
+### ⚙️ Application Issues
+- **Validation errors?** Check your category balances before adding transactions.
+- **Missing categories?** Add a budget category before transactions.
+
+### 🛠️ Common Fix
+```bash
+mvn clean package -DskipTests
+```
+
+---
+
+## 🧪 Sample Data
+
+Sample categories included:
+- 🥦 **Groceries:** $500.00
+- 🎬 **Entertainment:** $200.00
+- 🚗 **Transportation:** $300.00
+
+---
+
+## 🤝 Contributing
+
+<div align="center">
+  <img src="https://media.giphy.com/media/l0MYQbT7p8Bz9c2mY/giphy.gif" width="120"/>
+</div>
+
+1. **Fork** this repo
+2. **Create a branch:**  
+   `git checkout -b feature/my-feature`
+3. **Commit:**  
+   `git commit -am 'Add a new feature'`
+4. **Push:**  
+   `git push origin feature/my-feature`
+5. **Open a Pull Request!**
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📬 Contact
+
+- **Email:** mandip.amgain123@gmail.com  
+- **GitHub:** [Mandip77](https://github.com/Mandip77)  
+- **Project Repo:** [SuperBudget](https://github.com/Mandip77/SuperBudget)
+
+---
+
+<p align="center">
+  <b>🚀 SuperBudget: Budgeting made joyful! 🚀</b><br>
+  <i>For personal use and learning. For production, add extra security and backups!</i>
+</p>
