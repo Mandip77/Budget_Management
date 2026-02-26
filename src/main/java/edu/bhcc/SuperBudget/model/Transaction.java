@@ -1,6 +1,7 @@
 package edu.bhcc.SuperBudget.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "transaction")
@@ -11,6 +12,7 @@ public class Transaction {
 
     private String description;
     private Double amount;
+    private LocalDate date;
 
     @ManyToOne
     @JoinColumn(name = "budget_category_id")
@@ -19,10 +21,11 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String description, Double amount, BudgetCategory budgetCategory) {
+    public Transaction(String description, Double amount, BudgetCategory budgetCategory, LocalDate date) {
         this.description = description;
         this.amount = amount;
         this.budgetCategory = budgetCategory;
+        this.date = date;
     }
 
     public Long getId() {
@@ -47,6 +50,14 @@ public class Transaction {
 
     public void setAmount(Double amount) {
         this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
     public BudgetCategory getBudgetCategory() {

@@ -1,1 +1,0 @@
-mysql -u newuser -p budgetapp < src/main/resources/data.sql

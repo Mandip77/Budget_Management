@@ -1,160 +1,473 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Budget Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<div class="container-fluid py-5" style="background-color: #f7f9fc;">
-    <div class="container">
-        <!-- Page Header -->
-        <div class="text-center mb-5">
-            <h1 class="mb-2">Super Budget Dashboard</h1>
-            <p class="text-muted">Manage your categories and transactions easily.</p>
-        </div>
-
-        <div class="row g-4">
-            <!-- Add New Transaction -->
-            <div class="col-12 col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">Add New Transaction</h5>
+    <div class="container-fluid py-5">
+        <div class="container">
+            <!-- Top Actions Bar -->
+            <div class="d-flex justify-content-end align-items-center mb-4 gap-2 flex-wrap">
+                <!-- Set Budget Form -->
+                <form th:action="@{/set-global-budget}" method="post" class="m-0 d-flex gap-2 align-items-center">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" name="globalBudgetAmount" step="0.01" min="0"
+                            placeholder="Set Overall Budget" th:value="${globalBudgetSetting}">
+                        <button type="submit" class="btn btn-primary" title="Set Manual Budget Limit">Save</button>
                     </div>
-                    <div class="card-body">
-                        <form th:action="@{/add-transaction}" th:object="${transaction}" method="post">
-                            <div class="mb-4">
-                                <label for="categoryId" class="form-label">Category</label>
-                                <select class="form-select" id="categoryId" name="categoryId" required>
-                                    <option th:each="category : ${budgetCategories}"
-                                            th:value="${category.id}"
+                </form>
+
+                <form th:action="@{/reset-month}" method="post" class="m-0"
+                    onsubmit="return confirm('Are you sure you want to reset the month? This will delete all transactions and reset category balances to their initial allocations.');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">📅 Reset Month</button>
+                </form>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportTableToCSV('transactions.csv')">📥 Export
+                    CSV</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            </div>
+
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1 class="mb-2">Super Budget Dashboard</h1>
+                <p class="text-muted">Manage your categories, track expenses, and reach your goals.</p>
+            </div>
+
+            <!-- Top Summary Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-md-4">
+                    <div class="card summary-card text-white"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="mb-1">Total Budget Limit</p>
+                                <h3
+                                    th:text="${'$' + #numbers.formatDecimal(totalBudget != null ? totalBudget : 0, 1, 'COMMA', 2, 'POINT')}">
+                                    $0.00</h3>
+                            </div>
+                            <!-- Small badge showing allocated vs limit if manual limit is set -->
+                            <div th:if="${globalBudgetSetting != null}" class="badge bg-light text-dark bg-opacity-75">
+                                Allocated: <span
+                                    th:text="${'$' + #numbers.formatDecimal(totalAllocated != null ? totalAllocated : 0, 1, 'COMMA', 2, 'POINT')}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card summary-card text-white"
+                        style="background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); border: none;">
+                        <p>Total Spent</p>
+                        <h3
+                            th:text="${'$' + #numbers.formatDecimal(totalSpent != null ? totalSpent : 0, 1, 'COMMA', 2, 'POINT')}">
+                            $0.00</h3>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card summary-card text-white"
+                        style="background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); border: none;">
+                        <p>Total Remaining</p>
+                        <h3
+                            th:text="${'$' + #numbers.formatDecimal(totalRemaining != null ? totalRemaining : 0, 1, 'COMMA', 2, 'POINT')}">
+                            $0.00</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Add New Transaction -->
+                <div class="col-12 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Add Transaction</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/add-transaction}" th:object="${transaction}" method="post">
+                                <div class="mb-4">
+                                    <label for="categoryId" class="form-label">Category</label>
+                                    <select class="form-select" id="categoryId" name="categoryId" required>
+                                        <option th:each="category : ${budgetCategories}" th:value="${category.id}"
                                             th:text="${category.name}"></option>
-                                </select>
-                            </div>
-                            <div class="mb-4">
-                                <label for="description" class="form-label">Description</label>
-                                <input type="text" class="form-control" id="description" name="description"
-                                       th:field="*{description}" placeholder="Enter transaction description" required />
-                            </div>
-                            <div class="mb-4">
-                                <label for="amount" class="form-label">Amount ($)</label>
-                                <input type="number" class="form-control" id="amount" name="amount"
-                                       th:field="*{amount}" step="0.01" min="0.01" placeholder="0.00" required />
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Add Transaction</button>
-                        </form>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="date" name="date" th:field="*{date}"
+                                        required />
+                                </div>
+                                <div class="mb-4">
+                                    <label for="description" class="form-label">Description</label>
+                                    <input type="text" class="form-control" id="description" name="description"
+                                        th:field="*{description}" placeholder="Enter transaction description"
+                                        required />
+                                </div>
+                                <div class="mb-4">
+                                    <label for="amount" class="form-label">Amount ($)</label>
+                                    <input type="number" class="form-control" id="amount" name="amount"
+                                        th:field="*{amount}" step="0.01" min="0.01" placeholder="0.00" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Add Transaction</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add / Update Budget Category -->
+                <div class="col-12 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Add Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/add-category}" th:object="${budgetCategory}" method="post">
+                                <input type="hidden" name="budgetCategoryId" th:value="${budgetCategory.id}" />
+                                <div class="mb-4">
+                                    <label for="name" class="form-label">Category Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" th:field="*{name}"
+                                        placeholder="Enter category name" required />
+                                </div>
+                                <div class="mb-4">
+                                    <label for="allocation" class="form-label">Allocation ($)</label>
+                                    <input type="number" class="form-control" id="allocation" name="allocation"
+                                        th:field="*{allocation}" step="0.01" min="0.01" placeholder="0.00" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Save Category</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart.js Visualization -->
+                <div class="col-12 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Expenses vs Budget</h5>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <canvas id="budgetChart" width="100" height="100"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Add / Update Budget Category -->
-            <div class="col-12 col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">Add / Update Budget Category</h5>
-                    </div>
-                    <div class="card-body">
-                        <form th:action="@{/add-category}" th:object="${budgetCategory}" method="post">
-                            <input type="hidden" name="budgetCategoryId" th:value="${budgetCategory.id}" />
-                            <div class="mb-4">
-                                <label for="name" class="form-label">Category Name</label>
-                                <input type="text" class="form-control" id="name" name="name"
-                                       th:field="*{name}" placeholder="Enter category name" required />
-                            </div>
-                            <div class="mb-4">
-                                <label for="allocation" class="form-label">Allocation ($)</label>
-                                <input type="number" class="form-control" id="allocation" name="allocation"
-                                       th:field="*{allocation}" step="0.01" min="0.01" placeholder="0.00" required />
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Save Category</button>
-                        </form>
+            <!-- Analytics Row: Category Spending Bar Chart -->
+            <div class="row mt-4 g-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Category Spending Breakdown</h5>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center"
+                            style="position: relative; height: 300px;">
+                            <canvas id="categoryBarChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Budget & Transactions Tables -->
+            <div class="row mt-5 g-4">
+                <!-- Current Budget -->
+                <div class="col-12 col-lg-7">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Current Monthly Budget</h5>
+                        </div>
+                        <div class="card-body p-0 table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Budget</th>
+                                        <th>Remaining</th>
+                                        <th>Spent</th>
+                                        <th>Progress</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="category : ${budgetCategories}">
+                                        <td th:text="${category.name}" class="fw-bold"></td>
+                                        <td
+                                            th:text="${'$' + #numbers.formatDecimal(category.allocation, 1, 'COMMA', 2, 'POINT')}">
+                                        </td>
+                                        <td th:text="${'$' + #numbers.formatDecimal(category.balance, 1, 'COMMA', 2, 'POINT')}"
+                                            th:classappend="${category.balance < 0} ? 'text-danger fw-bold' : 'text-success fw-bold'">
+                                        </td>
+                                        <td th:text="${'$' + #numbers.formatDecimal(category.allocation - category.balance, 1, 'COMMA', 2, 'POINT')}"
+                                            th:classappend="${category.allocation - category.balance < 0} ? 'text-danger' : ''">
+                                        </td>
+                                        <td style="width: 15%;">
+                                            <div class="progress" style="height: 10px; margin-top: 5px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                    th:style="'width: ' + (${category.allocation > 0 ? ((category.allocation - category.balance) / category.allocation) * 100 : 0}) + '%'"
+                                                    th:classappend="${(category.allocation - category.balance) > category.allocation * 0.9} ? 'bg-danger' : (${(category.allocation - category.balance) > category.allocation * 0.75} ? 'bg-warning' : 'bg-success')">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/edit-category/{id}(id=${category.id})}"
+                                                class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                            <a th:href="@{/delete-category/{id}(id=${category.id})}"
+                                                class="btn btn-sm btn-outline-danger">Delete</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="col-12 col-lg-5">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Recent Transactions</h5>
+                            <input type="text" id="transactionSearch" onkeyup="filterTransactions()"
+                                class="form-control form-control-sm w-50" placeholder="Search transactions...">
+                        </div>
+                        <div class="card-body p-0 table-responsive">
+                            <table class="table table-hover mb-0" id="transactionTable">
+                                <thead>
+                                    <tr>
+                                        <th style="cursor: pointer;" onclick="sortTable(0, 'str')" title="Sort by Date">
+                                            Date ↕️</th>
+                                        <th style="cursor: pointer;" onclick="sortTable(1, 'str')"
+                                            title="Sort by Description">Desc ↕️</th>
+                                        <th style="cursor: pointer;" onclick="sortTable(2, 'num')"
+                                            title="Sort by Amount">Amount ↕️</th>
+                                        <th style="cursor: pointer;" onclick="sortTable(3, 'str')"
+                                            title="Sort by Category">Category ↕️</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="transaction : ${transactions}">
+                                        <td th:text="${transaction.date}"></td>
+                                        <td th:text="${transaction.description}"></td>
+                                        <td th:text="${'$' + #numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}"
+                                            class="text-danger fw-bold"></td>
+                                        <td
+                                            th:text="${transaction.budgetCategory != null ? transaction.budgetCategory.name : ''}">
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/edit-transaction/{id}(id=${transaction.id})}"
+                                                class="btn btn-sm btn-outline-primary mb-1 w-100">Edit</a>
+                                            <a th:href="@{/delete-transaction/{id}(id=${transaction.id})}"
+                                                class="btn btn-sm btn-outline-danger w-100">Delete</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-
-        <!-- Budget & Transactions Tables -->
-        <div class="row mt-5 g-4">
-            <!-- Current Budget -->
-            <div class="col-12 col-lg-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">Current Monthly Budget</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Category</th>
-                                <th>Allocation</th>
-                                <th>Balance</th>
-                                <th>Activity</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="category : ${budgetCategories}">
-                                <td th:text="${category.name}"></td>
-                                <td th:text="${category.allocation}"></td>
-                                <td th:text="${category.balance}"
-                                    th:class="${category.balance < 0} ? 'text-danger fw-bold' : 'text-success fw-bold'"></td>
-                                <td th:text="${category.allocation - category.balance}"
-                                    th:class="${category.allocation - category.balance < 0} ? 'text-danger' : ''"></td>
-                                <td>
-                                    <a th:href="@{/edit-category/{id}(id=${category.id})}"
-                                       class="btn btn-sm btn-outline-primary me-1">Edit</a>
-                                    <a th:href="@{/delete-category/{id}(id=${category.id})}"
-                                       class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Transactions -->
-            <div class="col-12 col-lg-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">Recent Transactions</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th>Category</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="transaction : ${transactions}">
-                                <td th:text="${transaction.description}"></td>
-                                <td th:text="${transaction.amount}"
-                                    th:class="${transaction.amount < 0} ? 'text-danger fw-bold' : 'text-success fw-bold'"></td>
-                                <td th:text="${transaction.budgetCategory != null ? transaction.budgetCategory.name : ''}"></td>
-                                <td>
-                                    <a th:href="@{/edit-transaction/{id}(id=${transaction.id})}"
-                                       class="btn btn-sm btn-outline-primary me-1">Edit</a>
-                                    <a th:href="@{/delete-transaction/{id}(id=${transaction.id})}"
-                                       class="btn btn-sm btn-outline-danger">Delete</a>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js Script Injection -->
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            /*<![CDATA[*/
+            var totalBudget = /*[[${totalBudget != null ? totalBudget : 0}]]*/ 0;
+            var totalSpent = /*[[${totalSpent != null ? totalSpent : 0}]]*/ 0;
+            /*]]>*/
+
+            var ctx = document.getElementById('budgetChart').getContext('2d');
+            var budgetChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Total Spent', 'Remaining Budget'],
+                    datasets: [{
+                        data: [totalSpent, Math.max(0, totalBudget - totalSpent)],
+                        backgroundColor: [
+                            'rgba(255, 8, 68, 0.8)',
+                            'rgba(11, 163, 96, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 8, 68, 1)',
+                            'rgba(11, 163, 96, 1)'
+                        ],
+                        borderWidth: 1,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+            // Initialize Dark Mode based on localStorage
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Category Spending Bar Chart
+            var categoryLabels = [];
+            var categorySpentData = [];
+            var categoryColors = [];
+            /*[# th:each="category : ${budgetCategories}"]*/
+            categoryLabels.push(/*[[${category.name}]]*/ 'Category');
+            var spent = /*[[${category.allocation - category.balance}]]*/ 0;
+            var alloc = /*[[${category.allocation}]]*/ 0;
+            categorySpentData.push(spent);
+            if (spent > alloc * 0.9) {
+                categoryColors.push('rgba(220, 53, 69, 0.8)'); // danger red
+            } else if (spent > alloc * 0.75) {
+                categoryColors.push('rgba(255, 193, 7, 0.8)'); // warning yellow
+            } else {
+                categoryColors.push('rgba(25, 135, 84, 0.8)'); // success green
+            }
+            /*[/]*/
+
+            var barCtx = document.getElementById('categoryBarChart').getContext('2d');
+            var categoryBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Amount Spent ($)',
+                        data: categorySpentData,
+                        backgroundColor: categoryColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+
+        function sortTable(n, type) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("transactionTable");
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    var cmpX = x.innerHTML.toLowerCase();
+                    var cmpY = y.innerHTML.toLowerCase();
+
+                    if (type === 'num') {
+                        cmpX = parseFloat(cmpX.replace(/[^0-9.-]+/g, ""));
+                        cmpY = parseFloat(cmpY.replace(/[^0-9.-]+/g, ""));
+                    }
+
+                    if (dir == "asc") {
+                        if (cmpX > cmpY) { shouldSwitch = true; break; }
+                    } else if (dir == "desc") {
+                        if (cmpX < cmpY) { shouldSwitch = true; break; }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function filterTransactions() {
+            var input, filter, table, tr, tdDesc, tdCat, i, txtValueDesc, txtValueCat;
+            input = document.getElementById("transactionSearch");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("transactionTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) { // Skip header row
+                tdDesc = tr[i].getElementsByTagName("td")[0];
+                tdCat = tr[i].getElementsByTagName("td")[2];
+                if (tdDesc || tdCat) {
+                    txtValueDesc = tdDesc.textContent || tdDesc.innerText;
+                    txtValueCat = tdCat.textContent || tdCat.innerText;
+                    if (txtValueDesc.toUpperCase().indexOf(filter) > -1 || txtValueCat.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function exportTableToCSV(filename) {
+            var csv = [];
+            var rows = document.querySelectorAll("#transactionTable tr");
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+
+                // Exclude the 'Actions' column which is the last one (index 3)
+                for (var j = 0; j < cols.length - 1; j++) {
+                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim();
+                    // Escape double-quotes with double-double-quotes
+                    data = data.replace(/"/g, '""');
+                    // Enclose data in quotes
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            downloadCSV(csv.join("\n"), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            var csvFile;
+            var downloadLink;
+            csvFile = new Blob([csv], { type: "text/csv" });
+            downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

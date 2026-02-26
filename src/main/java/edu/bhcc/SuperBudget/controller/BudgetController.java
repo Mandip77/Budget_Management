@@ -20,7 +20,23 @@ public class BudgetController {
 
     @GetMapping("/")
     public String index(Model model) {
-        model.addAttribute("budgetCategories", budgetService.findAllBudgetCategories());
+        java.util.List<BudgetCategory> categories = budgetService.findAllBudgetCategories();
+        double totalAllocated = categories.stream().mapToDouble(BudgetCategory::getAllocation).sum();
+        double totalSpent = categories.stream().mapToDouble(c -> c.getAllocation() - c.getBalance()).sum();
+
+        Double globalBudgetSetting = budgetService.getGlobalBudget();
+        double displayTotalBudget = (globalBudgetSetting != null) ? globalBudgetSetting : totalAllocated;
+        double displayTotalRemaining = displayTotalBudget - totalSpent;
+
+        model.addAttribute("budgetCategories", categories);
+        // Pass the display budget (either manual or sum)
+        model.addAttribute("totalBudget", displayTotalBudget);
+        model.addAttribute("totalSpent", totalSpent);
+        model.addAttribute("totalRemaining", displayTotalRemaining);
+        // Pass the actual allocated sum
+        model.addAttribute("totalAllocated", totalAllocated);
+        model.addAttribute("globalBudgetSetting", globalBudgetSetting);
+
         model.addAttribute("transactions", budgetService.findAllTransactions());
         model.addAttribute("transaction", new Transaction());
         model.addAttribute("budgetCategory", new BudgetCategory());
@@ -31,21 +47,23 @@ public class BudgetController {
     public String addTransaction(
             @ModelAttribute Transaction transaction,
             @RequestParam("categoryId") Long budgetCategoryId,
-            Model model
-    ) {
+            Model model) {
         BudgetCategory budgetCategory = budgetService.findBudgetCategoryById(budgetCategoryId);
         if (budgetCategory != null) {
             try {
+                if (transaction.getDate() == null) {
+                    transaction.setDate(java.time.LocalDate.now());
+                }
                 transaction.setBudgetCategory(budgetCategory);
                 budgetService.saveTransaction(transaction);
-                System.out.println("Added transaction: " + transaction);  // Debug logging
+                System.out.println("Added transaction: " + transaction); // Debug logging
             } catch (IllegalArgumentException e) {
-                System.out.println("Error adding transaction: " + e.getMessage());  // Debug logging
+                System.out.println("Error adding transaction: " + e.getMessage()); // Debug logging
                 model.addAttribute("errorMessage", "Transaction could not be completed: " + e.getMessage());
                 return "redirect:/";
             }
         } else {
-            System.out.println("Invalid budget category.");  // Debug logging
+            System.out.println("Invalid budget category."); // Debug logging
             throw new IllegalArgumentException("Invalid budget category.");
         }
         return "redirect:/";
@@ -70,8 +88,7 @@ public class BudgetController {
     public String editTransaction(
             @ModelAttribute Transaction transaction,
             @RequestParam(value = "categoryId", required = false) Long budgetCategoryId,
-            Model model
-    ) {
+            Model model) {
         try {
             BudgetCategory budgetCategory = null;
             if (budgetCategoryId != null) {
@@ -83,10 +100,10 @@ public class BudgetController {
             }
 
             budgetService.updateTransaction(transaction.getId(), transaction.getAmount(),
-                    transaction.getDescription(), budgetCategory);
-            System.out.println("Updated transaction: " + transaction);  // Debug logging
+                    transaction.getDescription(), budgetCategory, transaction.getDate());
+            System.out.println("Updated transaction: " + transaction); // Debug logging
         } catch (IllegalArgumentException e) {
-            System.out.println("Error updating transaction: " + e.getMessage());  // Debug logging
+            System.out.println("Error updating transaction: " + e.getMessage()); // Debug logging
             model.addAttribute("errorMessage", "Transaction could not be updated: " + e.getMessage());
             return "redirect:/edit-transaction/" + transaction.getId();
         }
@@ -117,8 +134,7 @@ public class BudgetController {
     @PostMapping("/edit-category")
     public String editCategory(
             @ModelAttribute BudgetCategory budgetCategory,
-            @RequestParam("previousAllocation") Double previousAllocation
-    ) {
+            @RequestParam("previousAllocation") Double previousAllocation) {
         budgetService.updateBudgetCategory(budgetCategory, previousAllocation);
         return "redirect:/";
     }
@@ -126,6 +142,24 @@ public class BudgetController {
     @GetMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable("id") Long id) {
         budgetService.deleteTransaction(id);
+        return "redirect:/";
+    }
+
+    @PostMapping("/reset-month")
+    public String resetMonth() {
+        budgetService.resetMonthlyBudget();
+        return "redirect:/";
+    }
+
+    // --- Phase 4: Global Budget Endpoint ---
+    @PostMapping("/set-global-budget")
+    public String setGlobalBudget(@RequestParam("globalBudgetAmount") Double amount, Model model) {
+        try {
+            budgetService.setGlobalBudget(amount);
+            System.out.println("Set global budget to: " + amount);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error setting global budget: " + e.getMessage());
+        }
         return "redirect:/";
     }
 }

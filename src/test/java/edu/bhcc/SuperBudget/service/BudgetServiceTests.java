@@ -4,6 +4,7 @@ import edu.bhcc.SuperBudget.model.BudgetCategory;
 import edu.bhcc.SuperBudget.model.Transaction;
 import edu.bhcc.SuperBudget.repository.BudgetCategoryRepository;
 import org.junit.jupiter.api.Test;
+import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class BudgetServiceTests {
         category.setRemainingAmount(100.0);
         budgetCategoryRepository.save(category);
 
-        Transaction transaction = new Transaction("Groceries", 40.0, category);
+        Transaction transaction = new Transaction("Groceries", 40.0, category, LocalDate.now());
 
         budgetService.saveTransaction(transaction);
 
@@ -47,11 +48,10 @@ public class BudgetServiceTests {
         category.setRemainingAmount(50.0);
         budgetCategoryRepository.save(category);
 
-        Transaction tooLarge = new Transaction("Big bill", 60.0, category);
+        Transaction tooLarge = new Transaction("Big bill", 60.0, category, LocalDate.now());
         assertThrows(IllegalArgumentException.class, () -> budgetService.saveTransaction(tooLarge));
 
-        Transaction noCategory = new Transaction("Uncategorized", 10.0, null);
+        Transaction noCategory = new Transaction("Uncategorized", 10.0, null, LocalDate.now());
         assertThrows(IllegalArgumentException.class, () -> budgetService.saveTransaction(noCategory));
     }
 }
-

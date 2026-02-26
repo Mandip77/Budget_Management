@@ -2,26 +2,31 @@ package edu.bhcc.SuperBudget.service;
 
 import edu.bhcc.SuperBudget.model.BudgetCategory;
 import edu.bhcc.SuperBudget.model.Transaction;
+import edu.bhcc.SuperBudget.model.AppSetting;
 import edu.bhcc.SuperBudget.repository.BudgetCategoryRepository;
 import edu.bhcc.SuperBudget.repository.TransactionRepository;
+import edu.bhcc.SuperBudget.repository.AppSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @Service
 public class BudgetService {
 
     private final BudgetCategoryRepository budgetCategoryRepository;
     private final TransactionRepository transactionRepository;
+    private final AppSettingRepository appSettingRepository;
 
     @Autowired
     public BudgetService(
             BudgetCategoryRepository budgetCategoryRepository,
-            TransactionRepository transactionRepository
-    ) {
+            TransactionRepository transactionRepository,
+            AppSettingRepository appSettingRepository) {
         this.budgetCategoryRepository = budgetCategoryRepository;
         this.transactionRepository = transactionRepository;
+        this.appSettingRepository = appSettingRepository;
     }
 
     public List<BudgetCategory> findAllBudgetCategories() {
@@ -86,11 +91,12 @@ public class BudgetService {
 
     // UPDATED: Original method kept for backward compatibility
     public void updateTransaction(Long id, Double newAmount) {
-        updateTransaction(id, newAmount, null, null);
+        updateTransaction(id, newAmount, null, null, null);
     }
 
-    // NEW: Enhanced update method with description and category support
-    public void updateTransaction(Long id, Double newAmount, String newDescription, BudgetCategory newBudgetCategory) {
+    // NEW: Enhanced update method with description, category, and date support
+    public void updateTransaction(Long id, Double newAmount, String newDescription, BudgetCategory newBudgetCategory,
+            LocalDate newDate) {
         Transaction transaction = transactionRepository.findById(id).orElse(null);
         if (transaction == null) {
             throw new IllegalArgumentException("Transaction not found with ID: " + id);
@@ -114,9 +120,10 @@ public class BudgetService {
                 // Same category - check if the difference can be accommodated
                 Double amountDifference = newAmount - oldAmount;
                 if (amountDifference > 0 && amountDifference > targetCategory.getBalance()) {
-                    throw new IllegalArgumentException("Insufficient balance to increase transaction amount. Available: $"
-                            + String.format("%.2f", targetCategory.getBalance()) + ", Additional required: $"
-                            + String.format("%.2f", amountDifference));
+                    throw new IllegalArgumentException(
+                            "Insufficient balance to increase transaction amount. Available: $"
+                                    + String.format("%.2f", targetCategory.getBalance()) + ", Additional required: $"
+                                    + String.format("%.2f", amountDifference));
                 }
             }
         }
@@ -138,6 +145,9 @@ public class BudgetService {
         }
         if (newBudgetCategory != null) {
             transaction.setBudgetCategory(newBudgetCategory);
+        }
+        if (newDate != null) {
+            transaction.setDate(newDate);
         }
 
         // Update target budget category (deduct the new amount)
@@ -169,14 +179,16 @@ public class BudgetService {
      * updating its name and allocation, and adjusting its remaining amount
      * and balance based on the change in allocation.
      *
-     * @param updatedCategory    the category submitted from the form (contains id, name and allocation)
+     * @param updatedCategory    the category submitted from the form (contains id,
+     *                           name and allocation)
      * @param previousAllocation the allocation value prior to the edit
      * @return the saved BudgetCategory entity with updated values
      */
     public BudgetCategory updateBudgetCategory(BudgetCategory updatedCategory, Double previousAllocation) {
         // Fetch the existing category from the repository
         BudgetCategory existing = budgetCategoryRepository.findById(updatedCategory.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + updatedCategory.getId()));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Category not found with ID: " + updatedCategory.getId()));
 
         // Update editable fields
         existing.setName(updatedCategory.getName());
@@ -193,4 +205,34 @@ public class BudgetService {
         return budgetCategoryRepository.save(existing);
     }
 
+    @jakarta.transaction.Transactional
+    public void resetMonthlyBudget() {
+        // Delete all transactions
+        transactionRepository.deleteAll();
+
+        // Reset all category balances to their allocations
+        List<BudgetCategory> categories = budgetCategoryRepository.findAll();
+        for (BudgetCategory category : categories) {
+            category.setBalance(category.getAllocation());
+            category.setRemainingAmount(category.getAllocation());
+            category.setActivity(0.0);
+            budgetCategoryRepository.save(category);
+        }
+    }
+
+    // --- Phase 4: App Settings & Global Budget ---
+
+    public Double getGlobalBudget() {
+        return appSettingRepository.findById("GLOBAL_BUDGET")
+                .map(setting -> Double.parseDouble(setting.getValue()))
+                .orElse(null); // Return null if not set
+    }
+
+    public void setGlobalBudget(Double amount) {
+        if (amount == null || amount < 0) {
+            throw new IllegalArgumentException("Global Budget must be a positive number.");
+        }
+        AppSetting setting = new AppSetting("GLOBAL_BUDGET", amount.toString());
+        appSettingRepository.save(setting);
+    }
 }
